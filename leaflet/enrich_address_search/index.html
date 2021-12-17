@@ -1,0 +1,65 @@
+<html>
+<head>
+    <meta charset=utf-8 />
+    <title>Esri Leaflet Address search</title>
+    <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+
+    <!-- Load Leaflet from CDN-->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.1/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.0.1/dist/leaflet-src.js"></script>
+
+    <!-- Load Esri Leaflet from CDN -->
+    <script src="https://unpkg.com/esri-leaflet@2.0.4"></script>
+
+    <!-- Load Esri Leaflet Renderers -->
+    <script src="https://unpkg.com/esri-leaflet-renderers@2.0.2"></script>
+
+    <link rel="stylesheet" href="https://unpkg.com/esri-leaflet-geocoder@2.1.4/dist/esri-leaflet-geocoder.css">
+    <script src="https://unpkg.com/esri-leaflet-geocoder@2.1.4"></script>
+    
+    <style>
+        body {margin:0;padding:0;}
+        #map {position: absolute;top:43px;bottom:0;right:0;left:0;}
+
+        #title {
+          display: inline-block;
+          width: 100%;
+          padding: 10px;
+          font-size: 20px;
+          background-color: #843520;
+          color: #f8f8f8;
+        }
+    </style>
+</head>
+<body>
+
+<div id="title">use the magnifying glass to search for an address in PDX</div>
+<div id="map"></div>
+
+<script type='text/javascript'>
+    var map = L.map('map').setView([45.533, -122.657], 12);
+    L.esri.basemapLayer('DarkGray').addTo(map);
+
+    var searchControl = L.esri.Geocoding.geosearch().addTo(map);
+
+    searchControl.on('results', function (evt) {
+      neighborhoods.query()
+        .intersects(evt.latlng)
+        .run(function(error, featureCollection){
+          var marker = L.marker(evt.latlng).addTo(map);
+          
+          var incomeInfo = 'Average household income in ' + featureCollection.features[0].properties.NAME + ' is: $' + featureCollection.features[0].properties.AVGHINC_CY;
+
+          document.getElementById('title').innerHTML = incomeInfo;
+        });
+    })
+    // Load layers in order
+    map.createPane('neighborhoods');
+    var neighborhoods = L.esri.featureLayer({
+      url: 'http://services.arcgis.com/uCXeTVveQzP4IIcx/arcgis/rest/services/PDX_Neighborhoods_Styled/FeatureServer/0',
+      pane: 'neighborhoods'
+    }).addTo(map);
+</script>
+
+</body>
+</html>
